@@ -67,5 +67,5 @@ export const CAPTIONS = {
   inbox: "This is what your customer sees. Nothing is sent from this page. In the real product the reminder lands in your own Drafts first, and you press send.",
   paid: "In the first version you tick Paid yourself. Later the bank feed in {ledger} does it.",
   list: "Your Monday morning list. Anything over the amount you set never gets chased automatically. It waits for you.",
-  footer: "A working demo by Witmark. Nothing you type here is saved or sent. Xero and QuickBooks are the names of their owners' products; this page only shows what an invoice looks like in each.",
+  footer: "A working demo by Quietside. Nothing you type here is saved or sent. Xero and QuickBooks are the names of their owners' products; this page only shows what an invoice looks like in each.",
 };

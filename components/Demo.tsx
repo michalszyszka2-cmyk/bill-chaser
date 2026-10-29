@@ -68,7 +68,7 @@ export default function Demo() {
   return (
     <main className="mx-auto w-full max-w-6xl px-4 pb-32 sm:px-6 sm:pb-16">
       <header className="pt-10 pb-6 sm:pt-14">
-        <p className="text-sm text-ink-soft">Witmark · a working demo</p>
+        <p className="text-sm text-ink-soft">Quietside · a working demo</p>
         <h1 className="mt-2 text-4xl leading-[1.05] sm:text-5xl">The bill chaser</h1>
         <p className="mt-4 max-w-2xl text-lg text-ink-soft">
           Job done, invoice written, polite reminders, paid. Try it as {TRADE.name}, {TRADE.town}. Nothing here is sent
@@ -401,7 +401,10 @@ export default function Demo() {
       </div>
 
       <footer className="mt-12 max-w-3xl">
-        <p className="caption">{CAPTIONS.footer}</p>
+        <p className="caption">
+          Quietside · <a className="underline underline-offset-2" href="https://quietside.co.uk/">quietside.co.uk</a>
+        </p>
+        <p className="caption mt-2">{CAPTIONS.footer}</p>
       </footer>
     </main>
   );
