@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+
+# video explainer build artefacts (regenerate with video/render.py)
+video/frames/
+video/seg/
+video/preview/
+video/*.log
+
+# video-howto build artefacts (same as video/)
+video-howto/frames/
+video-howto/seg/
+video-howto/preview/
+video-howto/check/
+video-howto/*.log
+
+# video source folders stay out of git (Quietside consistency job, 29 Oct 2026)
+video/
+video-howto/

@@ -102,11 +102,19 @@ h1, h2, h3, .display {
   flex: none;
 }
 .tick[data-on="true"] { background: var(--moss); border-color: var(--moss); }
+.tick-lg { width: 36px; height: 36px; border-radius: 9px; border-width: 2px; }
+
+/* phone job cards: no hover to reveal a field, so show its edge; 16px stops iOS zooming on focus */
+.cell-m { border-color: var(--line); background: var(--white); font-size: 16px; }
+/* .cell is unlayered, so it beats Tailwind width utilities; set these widths here */
+.cell-amt { width: 5.5rem; flex: none; }
+.cell-date { width: auto; }
 
 input[type="range"] {
   width: 100%;
   accent-color: var(--clay);
 }
+.range-lg { height: 36px; }
 
 .pill {
   display: inline-block;

@@ -50,6 +50,15 @@ export default function Demo() {
     setPasteText("");
     setPasteOpen(false);
   };
+  // One-column layouts (phones, tablets): the invoice and inbox aren't beside the lists, so take the reader there.
+  const jumpTo = (id: string) => {
+    if (window.matchMedia("(max-width: 1023px)").matches)
+      requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
+  const showInbox = (jobId: string) => {
+    setSelectedId(jobId);
+    jumpTo("inbox");
+  };
   const reset = () => {
     setJobs(SEED_JOBS.map((j) => ({ ...j })));
     setS(DEFAULTS);
@@ -57,7 +66,7 @@ export default function Demo() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6">
+    <main className="mx-auto w-full max-w-6xl px-4 pb-32 sm:px-6 sm:pb-16">
       <header className="pt-10 pb-6 sm:pt-14">
         <p className="text-sm text-ink-soft">Witmark · a working demo</p>
         <h1 className="mt-2 text-4xl leading-[1.05] sm:text-5xl">The bill chaser</h1>
@@ -77,7 +86,7 @@ export default function Demo() {
             </button>
           ))}
         </div>
-        <label className="flex min-w-[240px] flex-1 items-center gap-3">
+        <label className="hidden min-w-[240px] flex-1 items-center gap-3 sm:flex">
           <span className="whitespace-nowrap text-sm text-ink-soft">
             Today <strong className="font-medium text-ink">{fmtDate(s.day)}</strong>
             {s.day > 0 && <span className="text-ink-faint"> (+{s.day} days)</span>}
@@ -97,9 +106,9 @@ export default function Demo() {
       </div>
 
       <div className="grid min-w-0 gap-6 lg:grid-cols-[1.15fr_1fr]">
-        {/* LEFT */}
-        <div className="flex min-w-0 flex-col gap-6">
-          <section className="card min-w-0 p-5">
+        {/* LEFT (below lg the two columns dissolve so the sections run 1-5) */}
+        <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-6">
+          <section className="card order-1 min-w-0 p-5 lg:order-none">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-2xl">1. Jobs</h2>
               <div className="flex gap-2">
@@ -115,7 +124,7 @@ export default function Demo() {
             {pasteOpen && (
               <div className="mt-3">
                 <textarea
-                  className="cell h-24 w-full border-line bg-white font-mono text-sm"
+                  className="cell h-24 w-full border-line bg-white font-mono text-base sm:text-sm"
                   placeholder={"Customer\tJob\tDate finished\tAmount\nJo Bloggs\tLeaking cistern\t2026-10-08\t140"}
                   value={pasteText}
                   onChange={(e) => setPasteText(e.target.value)}
@@ -137,7 +146,69 @@ export default function Demo() {
                 </div>
               </div>
             )}
-            <div className="-mx-2 mt-4 max-w-[calc(100%+1rem)] overflow-x-auto">
+            <ul className="mt-4 flex flex-col gap-3 sm:hidden">
+              {jobs.map((j) => {
+                const inv = byJob.get(j.id);
+                const isSel = inv && selected?.job.id === j.id;
+                return (
+                  <li
+                    key={j.id}
+                    className={`rounded-xl border p-3 ${isSel ? "border-clay bg-paper-tint/60" : "border-line"}`}
+                    onClick={() => inv && setSelectedId(j.id)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="tick tick-lg"
+                        data-on={j.done}
+                        aria-label={j.done ? "Mark not done" : "Mark done"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDone(j);
+                        }}
+                      >
+                        {j.done && (
+                          <svg width="18" height="18" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.2">
+                            <path d="M2.5 7.5l3 3 6-7" />
+                          </svg>
+                        )}
+                      </button>
+                      <input className="cell cell-m font-medium" value={j.customer} placeholder="Customer" aria-label="Customer" onChange={(e) => updateJob(j.id, { customer: e.target.value })} />
+                      <span className="flex flex-none items-center gap-1">
+                        <span className="text-ink-faint">£</span>
+                        <input
+                          className="cell cell-m cell-amt text-right"
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          value={j.amount || ""}
+                          placeholder="0"
+                          aria-label="Amount"
+                          onChange={(e) => updateJob(j.id, { amount: Number(e.target.value) })}
+                        />
+                      </span>
+                    </div>
+                    <input className="cell cell-m mt-2" value={j.job} placeholder="What you did" aria-label="What you did" onChange={(e) => updateJob(j.id, { job: e.target.value })} />
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <input className="cell cell-m cell-date" type="date" aria-label="Date finished" value={j.finished} onChange={(e) => e.target.value && updateJob(j.id, { finished: e.target.value })} />
+                      {inv ? <StatusPill inv={inv} /> : <span className="text-sm text-ink-faint">not done yet</span>}
+                    </div>
+                    {isSel && (
+                      <a
+                        href="#invoice"
+                        className="mt-2 inline-block text-sm text-clay-deep underline underline-offset-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById("invoice")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                      >
+                        See its invoice ↓
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="-mx-2 mt-4 hidden max-w-[calc(100%+1rem)] overflow-x-auto sm:block">
               <table className="w-full min-w-[560px] text-[0.95rem]">
                 <thead className="text-left text-xs uppercase tracking-wide text-ink-faint">
                   <tr>
@@ -207,7 +278,7 @@ export default function Demo() {
             </div>
           </section>
 
-          <section className="card p-5">
+          <section className="card order-3 min-w-0 p-5 lg:order-none">
             <h2 className="text-2xl">3. How to chase</h2>
             <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <div>
@@ -250,7 +321,7 @@ export default function Demo() {
             </div>
           </section>
 
-          <section className="card p-5">
+          <section className="card order-5 min-w-0 p-5 lg:order-none">
             <div className="flex items-baseline justify-between">
               <h2 className="text-2xl">5. Who owes what</h2>
               <span className="text-sm text-ink-soft">
@@ -263,7 +334,7 @@ export default function Demo() {
                 <p className="text-xs font-medium uppercase tracking-wide text-clay-deep">Needs you</p>
                 <ul className="mt-1 divide-y divide-line">
                   {list.needsYou.map((i) => (
-                    <OwesRow key={i.number} inv={i} onSelect={() => setSelectedId(i.job.id)} note={i.needsYou} />
+                    <OwesRow key={i.number} inv={i} onSelect={() => showInbox(i.job.id)} note={i.needsYou} />
                   ))}
                 </ul>
               </div>
@@ -278,7 +349,7 @@ export default function Demo() {
                     <OwesRow
                       key={i.number}
                       inv={i}
-                      onSelect={() => setSelectedId(i.job.id)}
+                      onSelect={() => showInbox(i.job.id)}
                       note={
                         i.daysOverdue > 0
                           ? `${i.daysOverdue} day${i.daysOverdue === 1 ? "" : "s"} overdue · ${i.reminders.length} reminder${i.reminders.length === 1 ? "" : "s"} sent`
@@ -293,19 +364,40 @@ export default function Demo() {
         </div>
 
         {/* RIGHT */}
-        <div className="flex min-w-0 flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
-          <section className="card p-5">
+        <div className="contents lg:sticky lg:top-24 lg:flex lg:min-w-0 lg:flex-col lg:gap-6 lg:self-start">
+          <section id="invoice" className="card order-2 min-w-0 scroll-mt-4 p-5 lg:order-none">
             <h2 className="text-2xl">2. The invoice</h2>
             <p className="caption mt-2">{cap(CAPTIONS.invoice, s.ledger)}</p>
             {selected ? <InvoiceCard inv={selected} ledger={s.ledger} /> : <p className="mt-4 text-sm text-ink-soft">Tick a job as done to see its invoice.</p>}
           </section>
 
-          <section className="card p-5">
+          <section id="inbox" className="card order-4 min-w-0 scroll-mt-4 p-5 lg:order-none">
             <h2 className="text-2xl">4. What the customer sees</h2>
             <p className="caption mt-2">{CAPTIONS.inbox}</p>
             {selected && <Inbox inv={selected} day={s.day} threshold={s.threshold} onPaid={() => markPaid(selected)} ledger={s.ledger} />}
           </section>
         </div>
+      </div>
+
+      {/* phones: time stays under the thumb while you read the inbox */}
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 px-4 pt-2 pb-3 backdrop-blur sm:hidden">
+        <label className="block">
+          <span className="flex items-baseline justify-between text-sm text-ink-soft">
+            <span>
+              Today <strong className="font-medium text-ink">{fmtDate(s.day)}</strong>
+            </span>
+            <span className="text-ink-faint">{s.day > 0 ? `+${s.day} days` : "slide to move time"}</span>
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={60}
+            value={s.day}
+            aria-label="Move time forward"
+            className="range-lg mt-1"
+            onChange={(e) => set({ day: Number(e.target.value) })}
+          />
+        </label>
       </div>
 
       <footer className="mt-12 max-w-3xl">
@@ -442,7 +534,7 @@ function InvoiceCard({ inv, ledger }: { inv: Invoice; ledger: Ledger }) {
           <tr>
             <th className="px-5 py-2 font-medium">Activity</th>
             <th className="px-5 py-2 text-right font-medium">Qty</th>
-            <th className="px-5 py-2 text-right font-medium">Rate</th>
+            <th className="hidden px-5 py-2 text-right font-medium sm:table-cell">Rate</th>
             <th className="px-5 py-2 text-right font-medium">Amount</th>
           </tr>
         </thead>
@@ -450,7 +542,7 @@ function InvoiceCard({ inv, ledger }: { inv: Invoice; ledger: Ledger }) {
           <tr>
             <td className="px-5 py-2">{j.job || "Work done"}</td>
             <td className="px-5 py-2 text-right">1</td>
-            <td className="px-5 py-2 text-right">{fmtMoney(j.amount)}</td>
+            <td className="hidden px-5 py-2 text-right sm:table-cell">{fmtMoney(j.amount)}</td>
             <td className="px-5 py-2 text-right">{fmtMoney(j.amount)}</td>
           </tr>
         </tbody>
@@ -538,10 +630,10 @@ function Message({ from, day, subject, tag, children }: { from: string; day: num
     <li className="arrive bg-white px-4 py-3">
       <div className="flex items-baseline justify-between gap-3 text-xs text-ink-faint">
         <span>
-          {from}
-          {tag && <span className="ml-2 rounded-full bg-paper-tint px-2 py-0.5 text-ink-soft">{tag}</span>}
+          <span className="whitespace-nowrap">{from}</span>
+          {tag && <span className="ml-2 whitespace-nowrap rounded-full bg-paper-tint px-2 py-0.5 text-ink-soft">{tag}</span>}
         </span>
-        <span>{fmtDate(day)}</span>
+        <span className="whitespace-nowrap">{fmtDate(day)}</span>
       </div>
       <p className="mt-1 text-sm font-medium">{subject}</p>
       <p className="mt-1 text-sm leading-relaxed text-ink-soft">{children}</p>
